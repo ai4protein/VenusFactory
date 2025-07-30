@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from gradio_client import Client, handle_file
 import pandas as pd
 load_dotenv()
-api_key = "sk-a8d9f2aba3cf46c7bc222a17a00c28e8"
+
 class DeepSeekChat:
     def __init__(self, api_key: str = None):
         self.api_key = api_key or os.getenv("DEEPSEEK_API_KEY")
