@@ -14,10 +14,11 @@ from web.chat_tab import create_chat_tab
 from web.venus_factory_advanced_tool_tab import create_advanced_tool_tab
 from web.venus_factory_download_tab import create_download_tool_tab
 from web.venus_factory_quick_tool_tab import create_quick_tool_tab
+from web.stats_api import stats_manager
+from web.stats_routes import create_stats_routes
 
 
 def load_constant():
-    """Load constant values from config files"""
     try:
         return json.load(open("src/constant.json"))
     except Exception as e:
@@ -25,12 +26,16 @@ def load_constant():
         return {"error": f"Failed to load constant.json: {str(e)}"}
 
 def create_ui():
-    """Creates the main Gradio UI with a nested tab layout."""
     monitor = TrainingMonitor()
     constant = load_constant()
     
+    print("Starting VenusFactory statistics system...")
+    try:
+        print("Statistics system started successfully!")
+    except Exception as e:
+        print(f"Statistics system startup failed: {e}")
+    
     def update_output():
-        """Callback function to update the training monitor UI components."""
         try:
             if monitor.is_training:
                 messages = monitor.get_messages()
@@ -44,27 +49,23 @@ def create_ui():
         except Exception as e:
             return f"An error occurred in the UI update loop: {str(e)}", None, None
     
-    # Read CSS files and embed them directly
     def read_css_file(file_path):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-                print(f"✅ Successfully loaded CSS: {file_path} ({len(content)} characters)")
+                print(f"Successfully loaded CSS: {file_path} ({len(content)} characters)")
                 return content
         except Exception as e:
-            print(f"❌ Warning: Could not read CSS file {file_path}: {e}")
+            print(f"Warning: Could not read CSS file {file_path}: {e}")
             return ""
     
-    # Get the directory of this file
     current_dir = os.path.dirname(os.path.abspath(__file__))
     assets_dir = os.path.join(current_dir, "web", "assets")
     
-    # Read CSS files
     custom_css = read_css_file(os.path.join(assets_dir, "custom_ui.css"))
     manual_css = read_css_file(os.path.join(assets_dir, "manual_ui.css"))
     manual_js = read_css_file(os.path.join(assets_dir, "manual_ui.js"))
     
-    # Combine all CSS
     css_links = f"""
     <style>
     {custom_css}
@@ -110,6 +111,8 @@ def create_ui():
                     index_components = create_index_tab(constant)
                 except Exception as e:
                     gr.Markdown(f"**Error creating Index tab:**\n```\n{e}\n```")
+            
+            
             # Model Train and Prediction
             with gr.TabItem("🚀 Model Train and Prediction (For Advanced Users)"):
                 # Nested (Secondary) Tabs for sub-functions
@@ -139,35 +142,30 @@ def create_ui():
                 except Exception as e:
                     gr.Markdown(f"**Error creating Chat tab:**\n```\n{e}\n```")
 
-            # Quick Tools
             with gr.TabItem("🔧 Quick Tools "):
                 try:
                     easy_use_components = create_quick_tool_tab(constant)
                 except Exception as e:
                     gr.Markdown(f"**Error creating Easy-Use tab:**\n```\n{e}\n```")
                 
-            # Advanced Tools
             with gr.TabItem("⚡ Advanced Tools"):
                 try:
                     advanced_tool_components = create_advanced_tool_tab(constant)
                 except Exception as e:
                     gr.Markdown(f"**Error creating Advanced Tools tab:**\n```\n{e}\n```")
 
-            # Download
             with gr.TabItem("💾 Download "):
                 try:
                     download_components = create_download_tool_tab(constant)
                 except Exception as e:
                     gr.Markdown(f"**Error creating Download tab:**\n```\n{e}\n```")
                 
-            # Manual (no nested tabs needed)
             with gr.TabItem("📖 Manual "):
                 try:
                     manual_components = create_manual_tab(constant)
                 except Exception as e:
                     gr.Markdown(f"**Error creating Manual tab:**\n```\n{e}\n```")
         
-        # Check if the training components were created successfully before setting up the monitor loop
         if train_components and all(k in train_components for k in ["output_text", "loss_plot", "metrics_plot"]):
             demo.load(
                 fn=update_output,
@@ -180,8 +178,42 @@ def create_ui():
 
             )
         else:
-            # This message will be printed to the console where the script is running
-            print("Warning: Training monitor components not found. The live update feature for training will be disabled.")
+            print("Warning: Training monitor components not found.")
+        
+        try:
+            stats_routes = create_stats_routes()
+            
+            demo.load(
+                fn=stats_routes["get_stats"],
+                inputs=None,
+                outputs=gr.JSON(visible=False),
+                api_name="stats/get_stats"
+            )
+            
+            demo.load(
+                fn=stats_routes["track_visit"],
+                inputs=None,
+                outputs=gr.Text(visible=False),
+                api_name="stats/track_visit"
+            )
+            
+            demo.load(
+                fn=stats_routes["track_usage"],
+                inputs=None,
+                outputs=gr.Text(visible=False),
+                api_name="stats/track_usage"
+            )
+            
+            demo.load(
+                fn=stats_routes["reset_stats"],
+                inputs=None,
+                outputs=gr.Text(visible=False),
+                api_name="stats/reset_stats"
+            )
+            
+            print("Statistics API endpoints registered successfully")
+        except Exception as e:
+            print(f"Failed to register statistics API endpoints: {e}")
             
     return demo
 
