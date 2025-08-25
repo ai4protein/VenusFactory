@@ -375,7 +375,7 @@ def create_index_tab(constant):
                     <h3 style="font-size: 1.2em; font-weight: 700; color: var(--text-secondary); margin-bottom: 20px;">Cooperation Platform & Developer Information</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; font-size: 1.1em;">
                         <div>  
-                            <div style="margin-bottom: 12px;"><b>🤝 Cooperation Platform:</b> <a href="https://hyper.ai/cn/tutorials/38568" target="_blank" style="color: var(--accent-color);">HyberAI</a></div>
+                            <div style="margin-bottom: 12px;"><b>🤝 Cooperation Platform:</b> <a href="https://hyper.ai/cn/tutorials/38568" target="_blank" style="color: var(--accent-color);">HyperAI</a></div>
                             <div style="margin-bottom: 12px;"><b>🧬 Few-shot mutation prediction tool:</b> <a href="https://github.com/ai4protein/Pro-FSFP" target="_blank" style="color: var(--accent-color);">Pro-FSFP</a></div>
                             <div style="margin-bottom: 12px;"><b>⚡ The most advanced zero-shot protein prediction tool:</b> <a href="https://github.com/ai4protein/VenusREM" target="_blank" style="color: var(--accent-color);">VenusREM</a></div>
                         </div>
